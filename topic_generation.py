@@ -29,4 +29,5 @@ def get_headlines(url):
 def get_topics():
   return get_headlines(mirror_url) + get_headlines(huff_url)
 
-print('get_topics()', get_topics())
+for topic in get_topics():
+  print('topic', topic)
