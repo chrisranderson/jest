@@ -1,8 +1,8 @@
-
-#will add these later from Daniel Ricks' github account
-#import scholar.scholar as sch
-#import penseur.penseur as penseur
-
+import scholar.scholar as sch
+import penseur.penseur as pens
+import topic_generation
+import random
+import time
 
 #EVALUATION FUNCTIONS
 
@@ -23,15 +23,27 @@ class Comedian:
 #properties and functions.
 
     def __init__(self):
-	pass
+	#print "Initializing scholar..."
+	#self.scholar = sch.Scholar() (not using this just yet)
+
+	print "Initializing penseur..."
+	self.penseur = pens.Penseur()
+	self.penseur.load('wikipedia_sentences')
 
     #GENERATION FUNCTIONS
 
     def getTopic(self):
-	pass
+	topics = topic_generation.get_topics()
+	return random.choice(topics)
 
-    def buildBasicJoke(self):
-	pass
+    def buildBasicJoke(self, topic):
+	#for now, our joke just consists of finding a sentence
+	#in skip-thought space that is similar to the topic
+	#
+	#(Obviously, we will need to improve on this method)
+
+	joke = self.penseur.get_closest_sentences(topic)[0]
+	return joke
 
     def optimizeJoke(self, joke):
         #executes one or more optimisers on
@@ -39,16 +51,32 @@ class Comedian:
         pass
 
     def createJoke(self, topic):
-	topic = self.getTopic()
 	joke = self.buildBasicJoke(topic)
-	joke - self.optimizeJoke(joke)
+	joke = self.optimizeJoke(joke)
 
-	#pass the joke to espeak
-
-	
-
-	pass
+	return joke
 
 
+    def begin(self):
+	print "\nI'm going to tell you a joke:"
+	time.sleep(1)
 
+	response = 'y'
+	while response == 'y':
+	   topic = self.getTopic()
+	   print "\nTopic is '" + topic + "'"
+
+	   print self.scholar.get_words_by_rarity(topic)
+
+	   joke = self.createJoke(topic)
+
+	   print joke
+	   #(pass the joke to espeak?)
+	   time.sleep(1)
+
+	   response = raw_input("Want to hear another one?(y/n): ")
+	   
+
+c = Comedian()
+c.begin()
 
