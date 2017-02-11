@@ -4,6 +4,10 @@ import topic_generation
 import random
 import time
 import nltk.data
+import pickle
+
+#import sys
+#sys.setrecursionlimit(10000)
 
 #EVALUATION FUNCTIONS
 
@@ -27,16 +31,9 @@ class Comedian:
 	#print "Initializing scholar..."
 	#self.scholar = sch.Scholar() (not using this just yet)
 
-	print "Initializing penseur..."
-
-	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-	fp = open("penseur/Wikipedia_first_10000_lines.txt")
-	data = fp.read()
-	sentences = "".join(tokenizer.tokenize(data))
-	self.penseur = pens.Penseur()
-	print "Encoding sentences"
-	self.penseur.encode(sentences)
-	#self.penseur.load('Wikipedia_first_10000_lines')
+	print "loading penseur data structure (this will take about 90 seconds...)"
+	with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
+	    self.penseur = pickle.load(handle)
 
     #GENERATION FUNCTIONS
 
@@ -56,7 +53,7 @@ class Comedian:
     def optimizeJoke(self, joke):
         #executes one or more optimisers on
         #the joke, then returns the new version
-        pass
+        return joke
 
     def createJoke(self, topic):
 	joke = self.buildBasicJoke(topic)
@@ -74,7 +71,7 @@ class Comedian:
 	   topic = self.getTopic()
 	   print "\nTopic is '" + topic + "'"
 
-	   print self.scholar.get_words_by_rarity(topic)
+	   #print self.scholar.get_words_by_rarity(topic)
 
 	   joke = self.createJoke(topic)
 
@@ -84,6 +81,7 @@ class Comedian:
 
 	   response = raw_input("Want to hear another one?(y/n): ")
 	   
+	"Okay, bye!"
 
 c = Comedian()
 c.begin()
