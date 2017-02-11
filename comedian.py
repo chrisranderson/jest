@@ -3,6 +3,7 @@ import penseur.penseur as pens
 import topic_generation
 import random
 import time
+import nltk.data
 
 #EVALUATION FUNCTIONS
 
@@ -27,8 +28,15 @@ class Comedian:
 	#self.scholar = sch.Scholar() (not using this just yet)
 
 	print "Initializing penseur..."
+
+	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+	fp = open("penseur/Wikipedia_first_10000_lines.txt")
+	data = fp.read()
+	sentences = "".join(tokenizer.tokenize(data))
 	self.penseur = pens.Penseur()
-	self.penseur.load('wikipedia_sentences')
+	print "Encoding sentences"
+	self.penseur.encode(sentences)
+	#self.penseur.load('Wikipedia_first_10000_lines')
 
     #GENERATION FUNCTIONS
 
