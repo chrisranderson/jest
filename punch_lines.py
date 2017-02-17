@@ -2,6 +2,11 @@ import spacy
 from nlp import tokenize, remove_stop_words, remove_adverbs, remove_adjectives
 from nlp import print_tokens
 
+def word_associations(word):
+  '''
+  
+  '''
+
 
 def identify_handles(topic):
 
@@ -14,9 +19,8 @@ def identify_handles(topic):
 
   print('without_stop_words', without_stop_words)
   print('without_adverbs', without_adverbs)
-  print('without_adjectives', without_adjectives)
+  print('without_adjectives', ' '.join(str(without_adjectives)))
 
-  print_tokens(without_adjectives)
 
 
   '''
