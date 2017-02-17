@@ -28,5 +28,6 @@ def print_tokens(tokens):
     print('token.head', token.head)
     for child in token.children:
       print('  child', child)
+    print('token.subtree', token.subtree)
     # print('token.norm', token.norm)
     # print('token.sentiment', token.sentiment)
