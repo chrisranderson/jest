@@ -5,6 +5,7 @@ import random
 import time
 import nltk.data
 import pickle
+from punch_lines import *
 
 #import sys
 #sys.setrecursionlimit(10000)
@@ -29,25 +30,46 @@ class Comedian:
 
     def __init__(self):
 	#print "Initializing scholar..."
-	#self.scholar = sch.Scholar() (not using this just yet)
+	self.scholar = sch.Scholar()
 
-	print "loading penseur data structure (this will take about 90 seconds...)"
-	with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
-	    self.penseur = pickle.load(handle)
+	#NOT USING PENSEUR RIGHT NOW
+	#print "loading penseur data structure (this will take about 90 seconds...)"
+	#with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
+	#    self.penseur = pickle.load(handle)
 
     #GENERATION FUNCTIONS
+
+    def getAssociations(self,handle):
+        associations = []
+        for h in handle:
+            word = h.lower_
+	    tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
+            for tag in tags:
+                if self.scholar.exists_in_model(word+tag):
+                    indexes, metrics = self.scholar.model.cosine(word + tag)
+                    response = self.scholar.model.generate_response(indexes, metrics, 5)
+                    for r in response:
+                        #strip tags and append to list
+                        associations.append(r[0][:r[0].index('_')])
+        return associations
+
 
     def getTopic(self):
 	topics = topic_generation.get_topics()
 	return random.choice(topics)
 
     def buildBasicJoke(self, topic):
-	#for now, our joke just consists of finding a sentence
-	#in skip-thought space that is similar to the topic
-	#
-	#(Obviously, we will need to improve on this method)
+	handles = identify_handles(topic)
+	print "\nHANDLES:"
+	print handles
 
-	joke = self.penseur.get_closest_sentences(topic)[0]
+	associations = {}
+        for h in handles:
+            associations = self.getAssociations(h)
+            print associations
+
+	joke = ''
+	#joke = self.penseur.get_closest_sentences(topic)[0]
 	return joke
 
     def optimizeJoke(self, joke):
