@@ -32,12 +32,40 @@ class Comedian:
 	#print "Initializing scholar..."
 	self.scholar = sch.Scholar()
 
-	#NOT USING PENSEUR RIGHT NOW
-	#print "loading penseur data structure (this will take about 90 seconds...)"
+	print "loading penseur data structure (this will take about 90 seconds...)"
 	#with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
 	#    self.penseur = pickle.load(handle)
-
+	self.penseur = pens.Penseur()
+#
     #GENERATION FUNCTIONS
+
+    def find_a_random_match(self, assoc_list):
+	#for now, randomly match items from different lists
+	#BUT WE WILL MAKE THIS SMARTER LATER!
+
+	if len(assoc_list) == 0:
+	    return None
+
+	#if len(assoc_list) == 1:
+	if True:
+	    #match the list with itself
+	    word1 = 'a'
+	    word2 = 'a'
+	    while word1 == word2:
+		word1 = random.choice(assoc_list[0])
+		word2 = random.choice(assoc_list[0])
+	    return (word1, word2)
+
+	else:
+	    #match items from two different sublists
+	    pass
+
+
+
+    def find_a_match(self, assoc_list):
+	#for now, randomly match items from different lists
+	#BUT WE WILL MAKE THIS SMARTER LATER!
+	return self.find_a_random_match(assoc_list)
 
     def getAssociations(self,handle):
         associations = []
@@ -64,9 +92,14 @@ class Comedian:
 	print handles
 
 	associations = {}
+	assoc_list = []
         for h in handles:
             associations = self.getAssociations(h)
+	    assoc_list.append(associations)
             print associations
+
+	matched = self.find_a_match(assoc_list)
+	print matched
 
 	joke = ''
 	#joke = self.penseur.get_closest_sentences(topic)[0]
