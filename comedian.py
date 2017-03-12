@@ -29,49 +29,49 @@ class Comedian:
 #properties and functions.
 
     def __init__(self):
-	#print "Initializing scholar..."
-	self.scholar = sch.Scholar()
+        #print "Initializing scholar..."
+        self.scholar = sch.Scholar()
 
-	print "loading penseur data structure (this will take about 90 seconds...)"
-	#with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
-	#    self.penseur = pickle.load(handle)
-	self.penseur = pens.Penseur()
+        print "loading penseur data structure (this will take about 90 seconds...)"
+        #with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
+        #    self.penseur = pickle.load(handle)
+        self.penseur = pens.Penseur()
 #
     #GENERATION FUNCTIONS
 
     def find_a_random_match(self, assoc_list):
-	#for now, randomly match items from different lists
-	#BUT WE WILL MAKE THIS SMARTER LATER!
+        #for now, randomly match items from different lists
+        #BUT WE WILL MAKE THIS SMARTER LATER!
 
-	if len(assoc_list) == 0:
-	    return None
+        if len(assoc_list) == 0:
+            return None
 
-	#if len(assoc_list) == 1:
-	if True:
-	    #match the list with itself
-	    word1 = 'a'
-	    word2 = 'a'
-	    while word1 == word2:
-		word1 = random.choice(assoc_list[0])
-		word2 = random.choice(assoc_list[0])
-	    return (word1, word2)
+        #if len(assoc_list) == 1:
+        if True:
+            #match the list with itself
+            word1 = 'a'
+            word2 = 'a'
+            while word1 == word2:
+                word1 = random.choice(assoc_list[0])
+                word2 = random.choice(assoc_list[0])
+            return (word1, word2)
 
-	else:
-	    #match items from two different sublists
-	    pass
+        else:
+            #match items from two different sublists
+            pass
 
 
 
     def find_a_match(self, assoc_list):
-	#for now, randomly match items from different lists
-	#BUT WE WILL MAKE THIS SMARTER LATER!
-	return self.find_a_random_match(assoc_list)
+        #for now, randomly match items from different lists
+        #BUT WE WILL MAKE THIS SMARTER LATER!
+        return self.find_a_random_match(assoc_list)
 
     def getAssociations(self,handle):
         associations = []
         for h in handle:
             word = h.lower_
-	    tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
+            tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
             for tag in tags:
                 if self.scholar.exists_in_model(word+tag):
                     indexes, metrics = self.scholar.model.cosine(word + tag)
@@ -83,27 +83,27 @@ class Comedian:
 
 
     def getTopic(self):
-	topics = topic_generation.get_topics()
-	return random.choice(topics)
+        topics = topic_generation.get_topics()
+        return random.choice(topics)
 
     def buildBasicJoke(self, topic):
-	handles = identify_handles(topic)
-	print "\nHANDLES:"
-	print handles
+        handles = identify_handles(topic)
+        print "\nHANDLES:"
+        print handles
 
-	associations = {}
-	assoc_list = []
+        associations = {}
+        assoc_list = []
         for h in handles:
             associations = self.getAssociations(h)
-	    assoc_list.append(associations)
+            assoc_list.append(associations)
             print associations
 
-	matched = self.find_a_match(assoc_list)
-	print matched
+        matched = self.find_a_match(assoc_list)
+        print matched
 
-	joke = ''
-	#joke = self.penseur.get_closest_sentences(topic)[0]
-	return joke
+        joke = ''
+        #joke = self.penseur.get_closest_sentences(topic)[0]
+        return joke
 
     def optimizeJoke(self, joke):
         #executes one or more optimisers on
@@ -111,32 +111,32 @@ class Comedian:
         return joke
 
     def createJoke(self, topic):
-	joke = self.buildBasicJoke(topic)
-	joke = self.optimizeJoke(joke)
+        joke = self.buildBasicJoke(topic)
+        joke = self.optimizeJoke(joke)
 
-	return joke
+        return joke
 
 
     def begin(self):
-	print "\nI'm going to tell you a joke:"
-	time.sleep(1)
+        print "\nI'm going to tell you a joke:"
+        time.sleep(1)
 
-	response = 'y'
-	while response == 'y':
-	   topic = self.getTopic()
-	   print "\nTopic is '" + topic + "'"
+        response = 'y'
+        while response == 'y':
+           topic = self.getTopic()
+           print "\nTopic is '" + topic + "'"
 
-	   #print self.scholar.get_words_by_rarity(topic)
+           #print self.scholar.get_words_by_rarity(topic)
 
-	   joke = self.createJoke(topic)
+           joke = self.createJoke(topic)
 
-	   print joke
-	   #(pass the joke to espeak?)
-	   time.sleep(1)
+           print joke
+           #(pass the joke to espeak?)
+           time.sleep(1)
 
-	   response = raw_input("Want to hear another one?(y/n): ")
-	   
-	"Okay, bye!"
+           response = raw_input("Want to hear another one?(y/n): ")
+           
+        "Okay, bye!"
 
 c = Comedian()
 c.begin()

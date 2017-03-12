@@ -11,20 +11,19 @@ def word_associations(word):
 
 
 def identify_handles(topic):
-  method = 3
   tokenized = tokenize(topic)
 
-  if method == 1:
+  handles = list(tokenized.ents)
+  handles += list(tokenized.noun_chunks)
+
+  if len(handles) < 2:
     without_stop_words = remove_stop_words(tokenized)
     without_adverbs = remove_adverbs(without_stop_words)
     without_adjectives = remove_adjectives(without_adverbs)
-    return without_adjectives
 
-  elif method == 2:
-    return list(tokenized.noun_chunks)
+    handles += without_adjectives
 
-  elif method == 3:
-    return list(tokenized.ents)
+  return handles
 
 def generate_punchline(topic):
   '''

@@ -1,3 +1,9 @@
+print('Initializing enchant...')
+
+import enchant
+english_dictionary = enchant.Dict("en_US")
+
+
 '''
 To add something to the list, run simple_encode(something), and paste
 the results into blacklist.
@@ -25,7 +31,15 @@ def simple_encode(x):
 
   return '.'.join(output)
 
+def is_english_word(word):
+  return english_dictionary.check(word)
+
+
 blacklist = [
+  '115.116.105.108.108.98.111.114.110',
+  '109.101.110.111.112.97.117.115',
+  '100.101.97.100', 
+  '116.114.97.103.101.100.121',
   '115.101.101.45.116.104.114.111.117.103.104',
   '100.105.115.97.98.105.108.105.116.121',
   '120.45.114.97.116.101.100',
