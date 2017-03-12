@@ -31,8 +31,8 @@ class Comedian:
 #properties and functions.
 
     def __init__(self):
-	#print "Initializing scholar..."
-	self.scholar = sch.Scholar()
+        #print "Initializing scholar..."
+        self.scholar = sch.Scholar()
 
 	print "loading penseur data structure (this will take about 90 seconds...)"
 	#with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
@@ -79,7 +79,7 @@ class Comedian:
 
     def find_a_random_match(self, association_lists):
 	#randomly match items from different lists
-
+    
         if len(association_lists) == 0:
             return None
 
@@ -99,13 +99,6 @@ class Comedian:
             counter += 1
         return (word1, word2)
 
-
-
-    def find_a_match(self, association_lists):
-	#for now, randomly match items from different lists
-	#BUT WE WILL MAKE THIS SMARTER LATER!
-	return self.find_a_random_match(association_lists)
-
     def filterAssociations(self, associations):
         #prune any associations that aren't in the word2vec listings
 	#also prune options that are too short
@@ -116,6 +109,10 @@ class Comedian:
                 filtered_associations.append(word)
 	return filtered_associations
 
+    def find_a_match(self, assoc_list):
+        #for now, randomly match items from different lists
+        #BUT WE WILL MAKE THIS SMARTER LATER!
+        return self.find_a_random_match(assoc_list)
 
     def getAssociations(self,handle):
         associations = []
@@ -136,8 +133,8 @@ class Comedian:
 
 
     def getTopic(self):
-	topics = topic_generation.get_topics()
-	return random.choice(topics)
+        topics = topic_generation.get_topics()
+        return random.choice(topics)
 
     def buildBasicJoke(self, topic):
 	handles = identify_handles(topic)
@@ -180,30 +177,30 @@ class Comedian:
         return joke
 
     def createJoke(self, topic):
-	joke = self.buildBasicJoke(topic)
-	joke = self.optimizeJoke(joke)
+        joke = self.buildBasicJoke(topic)
+        joke = self.optimizeJoke(joke)
 
-	return joke
+        return joke
 
 
     def begin(self):
-	print "\nI'm going to tell you a joke:"
-	time.sleep(1)
+        print "\nI'm going to tell you a joke:"
+        time.sleep(1)
 
-	response = 'y'
-	while response == 'y':
-	   topic = self.getTopic()
-	   print "\nTopic is '" + topic + "'"
+        response = 'y'
+        while response == 'y':
+           topic = self.getTopic()
+           print "\nTopic is '" + topic + "'"
 
 	   joke = self.createJoke(topic)
 
-	   print joke
-	   #(pass the joke to espeak?)
-	   time.sleep(1)
+           print joke
+           #(pass the joke to espeak?)
+           time.sleep(1)
 
-	   response = raw_input("Want to hear another one?(y/n): ")
-	   
-	"Okay, bye!"
+           response = raw_input("Want to hear another one?(y/n): ")
+           
+        "Okay, bye!"
 
 c = Comedian()
 c.begin()
