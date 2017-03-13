@@ -34,51 +34,51 @@ class Comedian:
         #print "Initializing scholar..."
         self.scholar = sch.Scholar()
 
-	print "loading penseur data structure (this will take about 90 seconds...)"
-	#with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
-	#    self.penseur = pickle.load(handle)
-	self.penseur = pens.Penseur()
+        print "loading penseur data structure (this will take about 90 seconds...)"
+        #with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
+        #    self.penseur = pickle.load(handle)
+        self.penseur = pens.Penseur()
         self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_50000_lines', self.penseur)
 #
     #GENERATION FUNCTIONS
 
 
     def score_match(self, match):
-	#score word pairs based on interest level...
-	score = 0
+        #score word pairs based on interest level...
+        score = 0
         word1 = match[0] + '_' +  self.scholar.get_most_common_tag(match[0])
         word2 = match[1] + '_' + self.scholar.get_most_common_tag(match[1])
 
-	#low score for synonyms - we want words with different connotations
-	print self.scholar.get_cosine_similarity(word1, word2)
-	dist = self.scholar.get_cosine_similarity(word1,word2)
-	print "COSINE SIMILARITY: %f" % (dist)
-	score += (1-dist)
+        #low score for synonyms - we want words with different connotations
+        print self.scholar.get_cosine_similarity(word1, word2)
+        dist = self.scholar.get_cosine_similarity(word1,word2)
+        print "COSINE SIMILARITY: %f" % (dist)
+        score += (1-dist)
 
-	#high score if one of the words is a proper noun?
+        #high score if one of the words is a proper noun?
 
-	#high score if one or both words has an emotional connotation
+        #high score if one or both words has an emotional connotation
 
-	#high score if it's a verb/noun or adj/noun pair?
+        #high score if it's a verb/noun or adj/noun pair?
 
-	#high score if both words are common
-	#(Common words tend to appear near the mean of the vector space)
-#	mean_vector = np.mean(self.scholar.model.vectors)
-#	diff = abs(self.scholar.model[word1].dot(mean_vector)) + abs(self.scholar.model[word2].dot( mean_vector))
-#	print "NOVELTY SCORE: %f" % (diff)
-#	score += diff
+        #high score if both words are common
+        #(Common words tend to appear near the mean of the vector space)
+#        mean_vector = np.mean(self.scholar.model.vectors)
+#        diff = abs(self.scholar.model[word1].dot(mean_vector)) + abs(self.scholar.model[word2].dot( mean_vector))
+#        print "NOVELTY SCORE: %f" % (diff)
+#        score += diff
 
-	#high score if the words have a high difference in length
-	length_diff = abs(len(match[0]) - len(match[1])) / max(len(match[0]), len(match[1]))
-	print "LENGTH DISTANCE: %i" % (length_diff)
+        #high score if the words have a high difference in length
+        length_diff = abs(len(match[0]) - len(match[1])) / max(len(match[0]), len(match[1]))
+        print "LENGTH DISTANCE: %i" % (length_diff)
         score += length_diff
 
 
-	#print "match %i" % score
-	return score
+        #print "match %i" % score
+        return score
 
     def find_a_random_match(self, association_lists):
-	#randomly match items from different lists
+        #randomly match items from different lists
     
         if len(association_lists) == 0:
             return None
@@ -87,27 +87,27 @@ class Comedian:
         word1 = 'empty'
         word2 = 'empty'
         counter = 0
-	MAX_ITERATIONS = 100
+        MAX_ITERATIONS = 100
 
         while ((word1 == word2) or word1 == 'empty' or word2 == 'empty') and counter < MAX_ITERATIONS:
-	    assoc_list1 = random.choice(association_lists)
-	    assoc_list2 = random.choice(association_lists)
-	    if len(assoc_list1) != 0:
-		word1 = random.choice(assoc_list1)
-	    if len(assoc_list2) != 0:
-		word2 = random.choice(assoc_list2)
+            assoc_list1 = random.choice(association_lists)
+            assoc_list2 = random.choice(association_lists)
+            if len(assoc_list1) != 0:
+                word1 = random.choice(assoc_list1)
+            if len(assoc_list2) != 0:
+                word2 = random.choice(assoc_list2)
             counter += 1
         return (word1, word2)
 
     def filterAssociations(self, associations):
         #prune any associations that aren't in the word2vec listings
-	#also prune options that are too short
-	filtered_associations = []
+        #also prune options that are too short
+        filtered_associations = []
         for word in associations:
             tagged_word = word + '_' +  self.scholar.get_most_common_tag(word)
             if self.scholar.exists_in_model(tagged_word) and len(word) >= 3:
                 filtered_associations.append(word)
-	return filtered_associations
+        return filtered_associations
 
     def find_a_match(self, assoc_list):
         #for now, randomly match items from different lists
@@ -118,10 +118,10 @@ class Comedian:
         associations = []
         for h in handle:
             if type(h) == unicode:
-		word = h
-	    else:
-		word = h.lower_
-	    tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
+                word = h
+            else:
+                word = h.lower_
+            tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
             for tag in tags:
                 if self.scholar.exists_in_model(word+tag):
                     indexes, metrics = self.scholar.model.cosine(word + tag)
@@ -137,39 +137,39 @@ class Comedian:
         return random.choice(topics)
 
     def buildBasicJoke(self, topic):
-	handles = identify_handles(topic)
-	if len(handles) < 1:
+        handles = identify_handles(topic)
+        if len(handles) < 1:
             print "\nNot enough handles found. switching to get_words_by_rarity"
             handles = self.scholar.get_words_by_rarity(topic)
-	print "\nHANDLES:"
-	print handles
+        print "\nHANDLES:"
+        print handles
 
-	associations = {}
-	association_lists = []
+        associations = {}
+        association_lists = []
         for h in handles:
             associations = self.getAssociations(h)
-	    association_lists.append(self.filterAssociations(associations))
+            association_lists.append(self.filterAssociations(associations))
             print association_lists[-1]
 
 
-	print "\n MATCHED ASSOCIATIONS:"
-	matched = self.find_a_match(association_lists)
-	#matched = self.find_a_match(association_lists)
-	print matched
+        print "\n MATCHED ASSOCIATIONS:"
+        matched = self.find_a_match(association_lists)
+        #matched = self.find_a_match(association_lists)
+        print matched
         word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
         word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
-	print self.scholar.get_cosine_similarity(word1, word2)
+        print self.scholar.get_cosine_similarity(word1, word2)
         print self.score_match(matched)
 
-	#primitive_joke_structure = Topic + matched[0] + matched[1]
+        #primitive_joke_structure = Topic + matched[0] + matched[1]
 
-	#find the embedded location of primitive_joke
-	#decode that location to form a grammatically complete sentence (?)
+        #find the embedded location of primitive_joke
+        #decode that location to form a grammatically complete sentence (?)
 
-	target_sentence = matched[0] + matched[1]
+        target_sentence = matched[0] + matched[1]
         target_vector = self.penseur.get_vector(target_sentence + topic)
-	joke = topic + ': ' + self.decode_helper.decode(target_vector)
-	return joke
+        joke = topic + ': ' + self.decode_helper.decode(target_vector)
+        return joke
 
     def optimizeJoke(self, joke):
         #executes one or more optimisers on
@@ -192,7 +192,7 @@ class Comedian:
            topic = self.getTopic()
            print "\nTopic is '" + topic + "'"
 
-	   joke = self.createJoke(topic)
+           joke = self.createJoke(topic)
 
            print joke
            #(pass the joke to espeak?)
