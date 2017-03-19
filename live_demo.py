@@ -1,5 +1,5 @@
 from topic_generation import get_topics
-from punch_lines import identify_handles
+from punch_lines import identify_handles, concept_associations
 from censor import is_english_word
 
 print('Importing scholar...')
@@ -34,7 +34,7 @@ indent = '  '
 
 print('Getting topics...')
 topics = get_topics()
-topics = [u'A restaurant in Pennsylvania is making news for selling a hamburger with deep-fried twinkies instead of a bun.']
+# topics = [u'A restaurant in Pennsylvania is making news for selling a hamburger with deep-fried twinkies instead of a bun.']
 for topic in topics:
   handles = identify_handles(topic)
   print('\n' + 'topic: ' + topic)
@@ -44,5 +44,5 @@ for topic in topics:
     for handle in handles:
       print(indent + 'handle: ' + str(handle))
 
-      for association in get_associations(handle):
+      for association in get_associations(handle) + concept_associations(handle):
         print(indent*2 + association)

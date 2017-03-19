@@ -31,3 +31,14 @@ def print_tokens(tokens):
     print('token.subtree', token.subtree)
     # print('token.norm', token.norm)
     # print('token.sentiment', token.sentiment)
+
+def lemmatize(text):
+  try:
+    token = nlp(text)
+  except TypeError as e:
+    token = text
+  try:
+    return token[0].lemma_
+  except AttributeError as e:
+    print('e', e)
+    return text

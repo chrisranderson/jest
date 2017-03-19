@@ -3,6 +3,10 @@ print('Initializing enchant...')
 import enchant
 english_dictionary = enchant.Dict("en_US")
 
+import string
+# translator = str.maketrans('', '', string.punctuation)
+
+censor_total = 0
 
 '''
 To add something to the list, run simple_encode(something), and paste
@@ -13,9 +17,30 @@ blacklist = None
 def filter_strings(string_list):
   return [x for x in string_list if string_is_clean(x)]
 
+def clean_string(sentence):
+  for word in decoded_blacklist:
+    pass
+
 def string_is_clean(sentence):
-  for encoded_word in blacklist:
-    if simple_decode(encoded_word).lower() in sentence.lower():
+  global censor_total
+  lowercase_sentence = set(sentence.lower().split(' '))
+  # lowercase_sentence = set(sentence.lower().translate(translator).split(' '))
+
+  # if len(lowercase_sentence.intersection(decoded_blacklist)) > 0:
+  #   if censor_total % 100 == 0:
+  #     print('censor_total', censor_total)
+      
+  #   censor_total += 1
+
+  #   return False
+
+  for word in lowercase_sentence:
+    if word in decoded_blacklist:
+      if censor_total % 1000 == 0:
+        print('censor_total', censor_total)
+        
+      censor_total += 1
+
       return False
 
   return True
@@ -34,8 +59,16 @@ def simple_encode(x):
 def is_english_word(word):
   return english_dictionary.check(word)
 
-blacklist = [
+def is_common_word(word):
+  return word in common_words
+
+headline_blacklist = [
   simple_encode('this'),
+]
+
+# filtered: 1330693425
+
+blacklist = [
   '107.111.111.116.99.104',
   '102.117.99.107.97.115.115',
   '100.111.117.99.104.101.98.97.103.115',
@@ -725,3 +758,113 @@ blacklist = [
   '111.118.97.114.121',
   '114.97.112.101.100',
   ]
+
+decoded_blacklist = set([simple_decode(x) for x in blacklist] + 
+  [simple_decode(x) + 's' for x in blacklist] + 
+  [simple_decode(x) + 'es' for x in blacklist]
+  )
+
+common_words = set(['the',
+'be',
+'to',
+'of',
+'and',
+'a',
+'in',
+'that',
+'have',
+'I',
+'it',
+'for',
+'not',
+'on',
+'with',
+'he',
+'as',
+'you',
+'do',
+'at',
+'Word',
+'this',
+'but',
+'his',
+'by',
+'from',
+'they',
+'we',
+'say',
+'her',
+'she',
+'or',
+'an',
+'will',
+'my',
+'one',
+'all',
+'would',
+'there',
+'their',
+'what',
+'Word',
+'so',
+'up',
+'out',
+'if',
+'about',
+'who',
+'get',
+'which',
+'go',
+'me',
+'when',
+'make',
+'can',
+'like',
+'time',
+'no',
+'just',
+'him',
+'know',
+'take',
+'Word',
+'people',
+'into',
+'year',
+'your',
+'good',
+'some',
+'could',
+'them',
+'see',
+'other',
+'than',
+'then',
+'now',
+'look',
+'only',
+'come',
+'its',
+'over',
+'think',
+'also',
+'Word',
+'back',
+'after',
+'use',
+'two',
+'how',
+'our',
+'work',
+'first',
+'well',
+'way',
+'even',
+'new',
+'want',
+'because',
+'any',
+'these',
+'give',
+'day',
+'most',
+'us'])
