@@ -35,7 +35,12 @@ class decode_helper:
             print self.decode(v)
             sentence = raw_input(">")
 
-    def jitter(self, vector, amount = 0.1, num_results = 10):
+    def jitter(self, sentence, stddev = 0.1, num_results = 10):
         #adds random amounts to the vector, as a way of sampling
 	#the space near a given sentence
-        pass
+        v = self.penseur.get_vector(sentence)
+        for i in range(num_results):
+            v_prime = v + np.random.normal(0,stddev,len(v))
+            print self.decode(v_prime)
+
+
