@@ -42,3 +42,6 @@ def lemmatize(text):
   except AttributeError as e:
     print('e', e)
     return text
+  except TypeError as e:
+    print('e', e)
+    return token.lemma_

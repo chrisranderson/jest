@@ -5,24 +5,12 @@ import random
 import time
 import nltk.data
 import pickle
-from punch_lines import *
+from handles import identify_handles
 import numpy as np
 import skipthought_decode_helper
 
 #import sys
 #sys.setrecursionlimit(10000)
-
-#EVALUATION FUNCTIONS
-
-def wildly_exaggerate(joke):
-    pass
-
-def alliterize(joke):
-    pass
-
-
-#JOKE MAXIMIZERS
-
 
 
 class Comedian:
@@ -39,7 +27,7 @@ class Comedian:
         #    self.penseur = pickle.load(handle)
         self.penseur = pens.Penseur()
         self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_50000_lines', self.penseur)
-#
+  
     #GENERATION FUNCTIONS
 
 

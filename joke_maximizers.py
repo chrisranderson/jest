@@ -1,4 +1,4 @@
-from punch_lines import c
+from associations import c
 from nlp import lemmatize
 
 def get_specific(sentence):
@@ -17,6 +17,14 @@ def get_specific(sentence):
         words[i] = first
 
   return ' '.join(words)
+
+
+def wildly_exaggerate(joke):
+    pass
+
+
+def alliterize(joke):
+    pass
 
 
 if __name__ == '__main__':

@@ -1,40 +1,14 @@
 from topic_generation import get_topics
-from punch_lines import identify_handles, concept_associations
+from handles import identify_handles
+from associations import concept_associations
 from censor import is_english_word
-
-print('Importing scholar...')
-import scholar.scholar as sch
-
-print('Initializing Scholar...')
-scholar = sch.Scholar()
-
-def get_associations(handle):
-    associations = set()
-
-    for h in handle:
-      word = h.lower_
-      tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
-
-      for tag in tags:
-
-        if scholar.exists_in_model(word + tag):
-          indexes, metrics = scholar.model.cosine(word + tag)
-          response = scholar.model.generate_response(indexes, metrics, 5)
-
-          for r in response:
-            associations.add(r[0][:r[0].index('_')])
-
-    return [word for word in list(associations) if is_english_word(word)][:10]
-
-
-################################################################################
-
+from associations import get_associations
 
 indent = '  '
 
 print('Getting topics...')
 topics = get_topics()
-# topics = [u'A restaurant in Pennsylvania is making news for selling a hamburger with deep-fried twinkies instead of a bun.']
+# topics = [u'adorable puppies']
 for topic in topics:
   handles = identify_handles(topic)
   print('\n' + 'topic: ' + topic)
@@ -44,5 +18,6 @@ for topic in topics:
     for handle in handles:
       print(indent + 'handle: ' + str(handle))
 
-      for association in get_associations(handle) + concept_associations(handle):
+      for association in concept_associations(handle):
+      # for association in get_associations(handle) + concept_associations(handle):
         print(indent*2 + association)
