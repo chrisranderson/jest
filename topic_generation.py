@@ -27,7 +27,7 @@ def get_headlines(url):
   return filter_strings(headlines)
 
 def get_topics():
-  return get_headlines(mirror_url) + get_headlines(huff_url)
+  return get_headlines(huff_url) #+ get_headlines(mirror_url)
 
 if __name__ == '__main__':
   for topic in get_topics():

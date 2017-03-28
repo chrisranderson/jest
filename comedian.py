@@ -24,6 +24,8 @@ def alliterize(joke):
 
 #JOKE MAXIMIZERS
 
+def nancy_is_SO_cool(vectors):
+    return range(len(vectors))
 
 
 class Comedian:
@@ -35,51 +37,51 @@ class Comedian:
         #print "Initializing scholar..."
         self.scholar = sch.Scholar()
 
-	print "loading penseur data structure (this will take about 90 seconds...)"
-	#with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
-	#    self.penseur = pickle.load(handle)
-	self.penseur = pens.Penseur()
+        print "loading penseur data structure (this will take about 90 seconds...)"
+        #with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
+        #    self.penseur = pickle.load(handle)
+        self.penseur = pens.Penseur()
         self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_50000_lines', self.penseur)
 #
     #GENERATION FUNCTIONS
 
 
     def score_match(self, match):
-	#score word pairs based on interest level...
-	score = 0
+        #score word pairs based on interest level...
+        score = 0
         word1 = match[0] + '_' +  self.scholar.get_most_common_tag(match[0])
         word2 = match[1] + '_' + self.scholar.get_most_common_tag(match[1])
 
-	#low score for synonyms - we want words with different connotations
-	print self.scholar.get_cosine_similarity(word1, word2)
-	dist = self.scholar.get_cosine_similarity(word1,word2)
-	print "COSINE SIMILARITY: %f" % (dist)
-	score += (1-dist)
+        #low score for synonyms - we want words with different connotations
+        print self.scholar.get_cosine_similarity(word1, word2)
+        dist = self.scholar.get_cosine_similarity(word1,word2)
+        print "COSINE SIMILARITY: %f" % (dist)
+        score += (1-dist)
 
-	#high score if one of the words is a proper noun?
+        #high score if one of the words is a proper noun?
 
-	#high score if one or both words has an emotional connotation
+        #high score if one or both words has an emotional connotation
 
-	#high score if it's a verb/noun or adj/noun pair?
+        #high score if it's a verb/noun or adj/noun pair?
 
-	#high score if both words are common
-	#(Common words tend to appear near the mean of the vector space)
-#	mean_vector = np.mean(self.scholar.model.vectors)
-#	diff = abs(self.scholar.model[word1].dot(mean_vector)) + abs(self.scholar.model[word2].dot( mean_vector))
-#	print "NOVELTY SCORE: %f" % (diff)
-#	score += diff
+        #high score if both words are common
+        #(Common words tend to appear near the mean of the vector space)
+#        mean_vector = np.mean(self.scholar.model.vectors)
+#        diff = abs(self.scholar.model[word1].dot(mean_vector)) + abs(self.scholar.model[word2].dot( mean_vector))
+#        print "NOVELTY SCORE: %f" % (diff)
+#        score += diff
 
-	#high score if the words have a high difference in length
-	length_diff = abs(len(match[0]) - len(match[1])) / max(len(match[0]), len(match[1]))
-	print "LENGTH DISTANCE: %i" % (length_diff)
+        #high score if the words have a high difference in length
+        length_diff = abs(len(match[0]) - len(match[1])) / max(len(match[0]), len(match[1]))
+        print "LENGTH DISTANCE: %i" % (length_diff)
         score += length_diff
 
 
-	#print "match %i" % score
-	return score
+        #print "match %i" % score
+        return score
 
     def find_a_random_match(self, association_lists):
-	#randomly match items from different lists
+        #randomly match items from different lists
     
         if len(association_lists) == 0:
             return None
@@ -88,15 +90,15 @@ class Comedian:
         word1 = 'empty'
         word2 = 'empty'
         counter = 0
-	MAX_ITERATIONS = 100
+        MAX_ITERATIONS = 100
 
         while ((word1 == word2) or word1 == 'empty' or word2 == 'empty') and counter < MAX_ITERATIONS:
-	    assoc_list1 = random.choice(association_lists)
-	    assoc_list2 = random.choice(association_lists)
-	    if len(assoc_list1) != 0:
-		word1 = random.choice(assoc_list1)
-	    if len(assoc_list2) != 0:
-		word2 = random.choice(assoc_list2)
+            assoc_list1 = random.choice(association_lists)
+            assoc_list2 = random.choice(association_lists)
+            if len(assoc_list1) != 0:
+                word1 = random.choice(assoc_list1)
+            if len(assoc_list2) != 0:
+                word2 = random.choice(assoc_list2)
             counter += 1
         return (word1, word2)
 
@@ -122,10 +124,10 @@ class Comedian:
         associations = []
         for h in handle:
             if type(h) == unicode:
-		word = h
-	    else:
-		word = h.lower_
-	    tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
+                word = h
+            else:
+                word = h.lower_
+            tags = ['_JJ', '_JJR', '_JJS', '_NN', '_VB', '_NNP', '_NNPS', 'NNS', 'UH']
             for tag in tags:
                 if self.scholar.exists_in_model(word+tag):
                     indexes, metrics = self.scholar.model.cosine(word + tag)
@@ -141,36 +143,56 @@ class Comedian:
         return random.choice(topics)
 
     def buildBasicJoke(self, topic):
-	handles = identify_handles(topic)
-	if len(handles) < 1:
+        handles = identify_handles(topic)
+        if len(handles) < 1:
             print "\nNot enough handles found. switching to get_words_by_rarity"
             handles = self.scholar.get_words_by_rarity(topic)
-	print "\nHANDLES:"
-	print handles
+        print "\nHANDLES:"
+        print handles
 
-	associations = {}
+        #associations = {}
+        #association_lists = []
+        #for h in handles:
+        #    associations = self.getAssociations(h)
+        #    association_lists.append(self.filterAssociations(associations))
+        #    print association_lists[-1]
+
 	association_lists = []
         for h in handles:
-            associations = self.getAssociations(h)
-	    association_lists.append(self.filterAssociations(associations))
+            associations = concept_associations(h)
+	    print "ASSOCIATIONS"
+	    print associations
+            #association_lists.append(self.filterAssociations(associations))
+
+	    #get vectors for each of the associations,
+            #then pass it to Chris's function to find
+            #maximally distinct options
+	    assoc_vectors = []
+            for a in associations:
+	        a = ''.join(word.strip(':;()[]-.?!,') for word in a)
+                v = self.penseur.get_vector(a)
+                assoc_vectors.append(v)
+	    indices = nancy_is_SO_cool(assoc_vectors)
+	    final_associations = np.array(associations)[indices]
+            association_lists.append(final_associations.tolist())
+	    print "ASSOCIATION LISTS [-1]"
             print association_lists[-1]
 
 
-	print "\n MATCHED ASSOCIATIONS:"
-	matched = self.find_a_match(association_lists)
-	#matched = self.find_a_match(association_lists)
-	print matched
-        word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
-        word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
-	print self.scholar.get_cosine_similarity(word1, word2)
-        print self.score_match(matched)
+        print "\n MATCHED ASSOCIATIONS:"
+        matched = self.find_a_match(association_lists)
+        #matched = self.find_a_match(association_lists)
+        print matched
+        #word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
+        #word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
+        #print self.scholar.get_cosine_similarity(word1, word2)
+        #print self.score_match(matched)
 
-	#primitive_joke_structure = Topic + matched[0] + matched[1]
+        #primitive_joke_structure = Topic + matched[0] + matched[1]
 
-	#find the embedded location of primitive_joke
-	#decode that location to form a grammatically complete sentence (?)
+        #find the embedded location of primitive_joke
+        #decode that location to form a grammatically complete sentence (?)
 
-	
 	input1 = matched[0] + ' ' + matched[1]
         target_vector = self.penseur.get_vector(input1)
 	output1 = self.decode_helper.decode(target_vector)
@@ -215,8 +237,15 @@ class Comedian:
             print "OUTPUT: " + output7
 
         if len(handles) > 2:
-	    adjusted_topic = topic.replace(handles[0].lower(), matched[0])
-            adjusted_topic = adjusted_topic.replace(handles[1].lower(), matched[1])
+
+            #if type(handles[0]) == unicode:
+	    print "HANDLE TYPE"
+	    print type(handles[0])
+            adjusted_topic = topic.replace(handles[0].string, matched[0])
+            adjusted_topic = adjusted_topic.replace(handles[1].string, matched[1])
+	    #else:
+            #    adjusted_topic = topic.replace(handles[0].lower(), matched[0])
+            #    adjusted_topic = adjusted_topic.replace(handles[1].lower(), matched[1])
             input8 = adjusted_topic
             target_vector = self.penseur.get_vector(input8)
 	    output8 = self.decode_helper.decode(target_vector)
@@ -248,7 +277,7 @@ class Comedian:
            topic = self.getTopic()
            print "\nTopic is '" + topic + "'"
 
-	   joke = self.createJoke(topic)
+           joke = self.createJoke(topic)
 
            print joke
            #(pass the joke to espeak?)

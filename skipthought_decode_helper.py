@@ -6,7 +6,10 @@ class decode_helper:
 
     #def __init__(self, filename='ALPHA_data', penseur_model = None):
     #def __init__(self, filename='wikipedia_first_2000_lines', penseur_model = None):
-    def __init__(self, filename='larry_king_50000_lines', penseur_model = None):
+    def __init__(self, filename='reddit', penseur_model = None):
+#    def __init__(self, filename='larry_king_50000_lines', penseur_model = None):
+#    def __init__(self, filename='larry_king_processed', penseur_model = None):
+#    def __init__(self, filename='larry_king_processed_LONG', penseur_model = None):
         self.dec = penseur_utils.load_decoder(filename)
         if penseur_model == None:
 	    self.penseur = penseur.penseur.Penseur()
