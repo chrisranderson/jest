@@ -10,6 +10,7 @@ import numpy as np
 import skipthought_decode_helper
 import censor
 from associations import n_maximally_distant_points as nancy_is_SO_cool
+from associations import concept_associations
 
 #import sys
 #sys.setrecursionlimit(10000)

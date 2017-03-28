@@ -1,17 +1,17 @@
 from random import shuffle
 
 import conceptnetter.conceptNetter as cn
-# c = cn.ConceptNetter()
+c = cn.ConceptNetter()
 import numpy as np
 
 from censor import is_english_word, is_common_word, string_is_clean, filter_strings
-
+from nlp import lemmatize
 
 print('Importing scholar...')
 import scholar.scholar as sch
 
 print('Initializing Scholar...')
-# scholar = sch.Scholar()
+scholar = sch.Scholar()
 
 def get_associations(handle):
     associations = set()
@@ -68,6 +68,9 @@ def n_maximally_distant_points(points_to_consider, n=10):
 
   returns: a list of indices of the most distant points
   '''
+  if len(points_to_consider) <= n:
+    return range(n)
+  
   import kmc2
   seeding = kmc2.kmc2(np.array(points_to_consider), n)
   reverse_index = {str(value): index for index, value in enumerate(points_to_consider)}
