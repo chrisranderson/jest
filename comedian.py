@@ -8,10 +8,11 @@ import pickle
 from handles import identify_handles
 import numpy as np
 import skipthought_decode_helper
+import censor
+from associations import n_maximally_distant_points as nancy_is_SO_cool
 
 #import sys
 #sys.setrecursionlimit(10000)
-
 
 class Comedian:
 #not sure whether joke should be just a 
@@ -89,13 +90,16 @@ class Comedian:
 
     def filterAssociations(self, associations):
         #prune any associations that aren't in the word2vec listings
-        #also prune options that are too short
-        filtered_associations = []
+	#also prune options that are too short
+
+	filtered_associations = []
         for word in associations:
             tagged_word = word + '_' +  self.scholar.get_most_common_tag(word)
             if self.scholar.exists_in_model(tagged_word) and len(word) >= 3:
-                filtered_associations.append(word)
-        return filtered_associations
+
+		if censor.is_english_word(word):
+                    filtered_associations.append(word)
+	return filtered_associations
 
     def find_a_match(self, assoc_list):
         #for now, randomly match items from different lists
@@ -132,11 +136,32 @@ class Comedian:
         print "\nHANDLES:"
         print handles
 
-        associations = {}
-        association_lists = []
+        #associations = {}
+        #association_lists = []
+        #for h in handles:
+        #    associations = self.getAssociations(h)
+        #    association_lists.append(self.filterAssociations(associations))
+        #    print association_lists[-1]
+
+	association_lists = []
         for h in handles:
-            associations = self.getAssociations(h)
-            association_lists.append(self.filterAssociations(associations))
+            associations = concept_associations(h)
+	    print "ASSOCIATIONS"
+	    print associations
+            #association_lists.append(self.filterAssociations(associations))
+
+	    #get vectors for each of the associations,
+            #then pass it to Chris's function to find
+            #maximally distinct options
+	    assoc_vectors = []
+            for a in associations:
+	        a = ''.join(word.strip(':;()[]-.?!,') for word in a)
+                v = self.penseur.get_vector(a)
+                assoc_vectors.append(v)
+	    indices = nancy_is_SO_cool(assoc_vectors)
+	    final_associations = np.array(associations)[indices]
+            association_lists.append(final_associations.tolist())
+	    print "ASSOCIATION LISTS [-1]"
             print association_lists[-1]
 
 
@@ -144,20 +169,78 @@ class Comedian:
         matched = self.find_a_match(association_lists)
         #matched = self.find_a_match(association_lists)
         print matched
-        word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
-        word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
-        print self.scholar.get_cosine_similarity(word1, word2)
-        print self.score_match(matched)
+        #word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
+        #word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
+        #print self.scholar.get_cosine_similarity(word1, word2)
+        #print self.score_match(matched)
 
         #primitive_joke_structure = Topic + matched[0] + matched[1]
 
         #find the embedded location of primitive_joke
         #decode that location to form a grammatically complete sentence (?)
 
-        target_sentence = matched[0] + matched[1]
-        target_vector = self.penseur.get_vector(target_sentence + topic)
-        joke = topic + ': ' + self.decode_helper.decode(target_vector)
-        return joke
+	input1 = matched[0] + ' ' + matched[1]
+        target_vector = self.penseur.get_vector(input1)
+	output1 = self.decode_helper.decode(target_vector)
+        print "\nINPUT1: " + input1
+        print "OUTPUT: " + output1
+	
+	input2 = matched[1] + ' ' + matched[0]
+        target_vector = self.penseur.get_vector(input2)
+	output2 = self.decode_helper.decode(target_vector)
+        print "\nINPUT2: " + input2
+        print "OUTPUT: " + output2
+	
+	input3 = matched[0] + ' ' + matched[1] + ' ' +  matched[0] + ' ' + matched[1] + ' ' + matched[0] + ' ' + matched[1] + '.'
+        target_vector = self.penseur.get_vector(input3)
+	output3 = self.decode_helper.decode(target_vector)
+        print "\nINPUT3: " + input3
+        print "OUTPUT: " + output3
+	
+        input4 = topic
+        target_vector = self.penseur.get_vector(input4)
+	output4 = self.decode_helper.decode(target_vector)
+        print "\nINPUT4: " + input4
+        print "OUTPUT: " + output4
+        
+        input5 = matched[0] + ' ' + matched[1] + ' ' + topic
+        target_vector = self.penseur.get_vector(input5)
+	output5 = self.decode_helper.decode(target_vector)
+        print "\nINPUT5: " + input5
+        print "OUTPUT: " + output5
+        
+	input6 = topic + ' ' + matched[0] + ' ' + matched[1]
+        target_vector = self.penseur.get_vector(input6)
+	output6 = self.decode_helper.decode(target_vector)
+        print "\nINPUT6: " + input6
+        print "OUTPUT: " + output6
+
+	if len(association_lists) > 0 and len(association_lists[0]) > 2:
+            input7 = " ".join(association_lists[0]) #first set of associations...
+            target_vector = self.penseur.get_vector(input7)
+	    output7 = self.decode_helper.decode(target_vector)
+            print "\nINPUT7: " + input7
+            print "OUTPUT: " + output7
+
+        if len(handles) > 2:
+
+            #if type(handles[0]) == unicode:
+	    print "HANDLE TYPE"
+	    print type(handles[0])
+            adjusted_topic = topic.replace(handles[0].string, matched[0])
+            adjusted_topic = adjusted_topic.replace(handles[1].string, matched[1])
+	    #else:
+            #    adjusted_topic = topic.replace(handles[0].lower(), matched[0])
+            #    adjusted_topic = adjusted_topic.replace(handles[1].lower(), matched[1])
+            input8 = adjusted_topic
+            target_vector = self.penseur.get_vector(input8)
+	    output8 = self.decode_helper.decode(target_vector)
+            print "\nINPUT8: " + input8
+            print "OUTPUT: " + output8
+
+        print "\n"
+	
+	return topic + ': ' + output5
 
     def optimizeJoke(self, joke):
         #executes one or more optimisers on
