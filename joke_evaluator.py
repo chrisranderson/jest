@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 
 pen = penseur.Penseur()
-classifer = joblib.load('cache/random-forest-classifer.pkl')
+classifier = joblib.load('cache/random-forest-classifer.pkl')
 
 def rate_joke(joke):
   print('joke', joke)
@@ -17,10 +17,10 @@ def rate_joke(joke):
 
   rating = classifier.predict_proba(vector)
 
-  return rating
+  return rating[0][1]
 
 
-joke = u"Quarterback Colin Kaepernick has done a complete 180. He now says he WILL stand for the national anthem. He's now sitting for the games, but he's standing for the anthem."
+joke = u"Quarterback  Colin has done a complete 180. He now says he WILL stand for the national anthem. He's now sitting for the games, but he's standing for the anthem."
 
 not_joke = u'The only advantage to this method is that the "order" argument is a list of the fields to order the search by. For example, you can sort by the second column, then the third column, then the first column by supplying order.'
 
