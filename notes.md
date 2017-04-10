@@ -1,3 +1,43 @@
+todo
+-----------------
+- train decoder
+- figure out how to save .wav files from espeak
+- probably not: how to pick good association pairs
+- joke evaluation function
+  - train a classifier on monologue vs. non-monologue joke
+  - encode as a skip thought
+  - bag of words model
+- joke maximizers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 - rather than get associated words, try to get knowledge / facts
   - urban dictionary
   - reddit
