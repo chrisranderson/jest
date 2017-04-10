@@ -9,7 +9,7 @@ from handles import identify_handles
 import numpy as np
 import skipthought_decode_helper
 import censor
-from associations import n_maximally_distant_points as nancy_is_SO_cool
+from associations import n_maximally_distant_points 
 from associations import concept_associations
 
 #import sys
@@ -28,6 +28,7 @@ class Comedian:
         #with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
         #    self.penseur = pickle.load(handle)
         self.penseur = pens.Penseur()
+        #self.decode_helper = skipthought_decode_helper.decode_helper('MONOLOGUE_NEXT_SENTENCE', self.penseur)
         self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_50000_lines', self.penseur)
   
     #GENERATION FUNCTIONS
@@ -71,7 +72,7 @@ class Comedian:
         #randomly match items from different lists
     
         if len(association_lists) == 0:
-            return None
+            return ('empty','empty')
 
         #only one list, so we match it with itself
         word1 = 'empty'
@@ -154,22 +155,31 @@ class Comedian:
 	    #get vectors for each of the associations,
             #then pass it to Chris's function to find
             #maximally distinct options
-	    assoc_vectors = []
-            for a in associations:
-	        a = ''.join(word.strip(':;()[]-.?!,') for word in a)
-                v = self.penseur.get_vector(a)
-                assoc_vectors.append(v)
-	    indices = nancy_is_SO_cool(assoc_vectors)
-	    final_associations = np.array(associations)[indices]
-            association_lists.append(final_associations.tolist())
-	    print "ASSOCIATION LISTS [-1]"
-            print association_lists[-1]
+	    NUM_ASSOCIATIONS = 10
+	    if len(associations) > NUM_ASSOCIATIONS:
+	        assoc_vectors = []
+                for a in associations:
+	            a = ''.join(word.strip(':;()[]-.?!,') for word in a)
+                    v = self.penseur.get_vector(a)
+                    assoc_vectors.append(v)
+
+		#print assoc_vectors
+		#raw_input("pause")
+		#print assoc_vectors.shape
+	        indices = n_maximally_distant_points(assoc_vectors, NUM_ASSOCIATIONS)
+	        final_associations = np.array(associations)[indices]
+                association_lists.append(final_associations.tolist())
+	        print "ASSOCIATION LISTS [-1]"
+                print association_lists[-1]
 
 
         print "\n MATCHED ASSOCIATIONS:"
         matched = self.find_a_match(association_lists)
         #matched = self.find_a_match(association_lists)
         print matched
+
+	if len(matched) < 2:
+	    return
         #word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
         #word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
         #print self.scholar.get_cosine_similarity(word1, word2)
