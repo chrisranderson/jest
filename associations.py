@@ -11,7 +11,7 @@ print('Importing scholar...')
 import scholar.scholar as sch
 
 print('Initializing Scholar...')
-scholar = sch.Scholar()
+#scholar = sch.Scholar()
 
 def get_associations(handle):
     associations = set()
@@ -72,6 +72,7 @@ def n_maximally_distant_points(points_to_consider, n=10):
     return range(n)
   
   import kmc2
+
   seeding = kmc2.kmc2(np.array(points_to_consider), n)
   reverse_index = {str(value): index for index, value in enumerate(points_to_consider)}
   indexes = [reverse_index[str(x)] for x in seeding]

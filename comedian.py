@@ -1,4 +1,4 @@
-import scholar.scholar as sch
+#import scholar.scholar as sch
 import penseur.penseur as pens
 import topic_generation
 import random
@@ -11,9 +11,51 @@ import skipthought_decode_helper
 import censor
 from associations import n_maximally_distant_points 
 from associations import concept_associations
+from evaluate import rate_joke
+import scipy.spatial.distance as scipy_distance
+import sys
 
 #import sys
 #sys.setrecursionlimit(10000)
+
+
+def nearest_skipthought_match(sentence, input_file, penseur):
+     print "Attempting to open input file"
+     sys.stdout.flush()
+     f = open(input_file, 'r')
+     try:
+         v1 = penseur.encode(sentence)
+     except:
+	print "ERROR ENCODING SENTENCE:"
+        sys.stdout.flush()
+	print sentence
+        print type(sentence)
+        sys.stdout.flush()
+	
+     cosine_similarity = 0
+     nearest_match = ''
+     print "HERE"
+     sys.stdout.flush()
+     for line in f:
+	try:
+	    v2 = penseur.encode(line)
+	except:
+	    print "ERROR ENCODING SENTENCE FROM TEXT CORPUS:"
+            sys.stdout.flush()
+	    print line
+	    print type(line)
+            sys.stdout.flush()
+	new_similarity = 1 - scipy_distance.cosine(v1,v2)
+	print "HERE2"
+        sys.stdout.flush()
+	if new_similarity > cosine_similarity:
+	    cosine_similarity = new_similarity
+            nearest_match = line
+	print "HERE3"
+        sys.stdout.flush()
+
+     return cosine_similarity, nearest_match
+
 
 class Comedian:
 #not sure whether joke should be just a 
@@ -22,15 +64,19 @@ class Comedian:
 
     def __init__(self):
         #print "Initializing scholar..."
-        self.scholar = sch.Scholar()
+        #self.scholar = sch.Scholar()
 
         print "loading penseur data structure (this will take about 90 seconds...)"
         #with open('Wikipedia_first_10000_lines.pkl', 'rb') as handle:
         #    self.penseur = pickle.load(handle)
         self.penseur = pens.Penseur()
-        #self.decode_helper = skipthought_decode_helper.decode_helper('MONOLOGUE_NEXT_SENTENCE', self.penseur)
-        self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_50000_lines', self.penseur)
-  
+        #self.decode_helper = skipthought_decode_helper.decode_helper('MONOLOGUE_PLUS_REDDIT_JUMBLED', self.penseur)
+        #self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_processed', self.penseur)
+        #self.decode_helper = skipthought_decode_helper.decode_helper('reddit', self.penseur)
+        
+	#self.decode_helper = skipthought_decode_helper.decode_helper('larry_king_processed_LONG', self.penseur)
+        self.decode_helper = skipthought_decode_helper.decode_helper('REDDIT_LONG2b', self.penseur)
+ 
     #GENERATION FUNCTIONS
 
 
@@ -72,7 +118,7 @@ class Comedian:
         #randomly match items from different lists
     
         if len(association_lists) == 0:
-            return ('empty','empty')
+            return None
 
         #only one list, so we match it with itself
         word1 = 'empty'
@@ -88,6 +134,12 @@ class Comedian:
             if len(assoc_list2) != 0:
                 word2 = random.choice(assoc_list2)
             counter += 1
+
+	if word1 == 'empty':
+	    return None
+        if word2 == 'empty':
+	    return None
+
         return (word1, word2)
 
     def filterAssociations(self, associations):
@@ -130,10 +182,10 @@ class Comedian:
         topics = topic_generation.get_topics()
         return random.choice(topics)
 
-    def buildBasicJoke(self, topic):
+    def getAssociationMatch(self, topic):
         handles = identify_handles(topic)
         if len(handles) < 1:
-            print "\nNot enough handles found. switching to get_words_by_rarity"
+            #print "\nNot enough handles found. switching to get_words_by_rarity"
             handles = self.scholar.get_words_by_rarity(topic)
         print "\nHANDLES:"
         print handles
@@ -148,8 +200,8 @@ class Comedian:
 	association_lists = []
         for h in handles:
             associations = concept_associations(h)
-	    print "ASSOCIATIONS"
-	    print associations
+	    #print "ASSOCIATIONS"
+	    #print associations
             #association_lists.append(self.filterAssociations(associations))
 
 	    #get vectors for each of the associations,
@@ -161,7 +213,7 @@ class Comedian:
                 for a in associations:
 	            a = ''.join(word.strip(':;()[]-.?!,') for word in a)
                     v = self.penseur.get_vector(a)
-                    assoc_vectors.append(v)
+                    assoc_vectors.append(v[0])
 
 		#print assoc_vectors
 		#raw_input("pause")
@@ -169,17 +221,27 @@ class Comedian:
 	        indices = n_maximally_distant_points(assoc_vectors, NUM_ASSOCIATIONS)
 	        final_associations = np.array(associations)[indices]
                 association_lists.append(final_associations.tolist())
-	        print "ASSOCIATION LISTS [-1]"
-                print association_lists[-1]
+	        #print "ASSOCIATION LISTS [-1]"
+                #print association_lists[-1]
 
 
-        print "\n MATCHED ASSOCIATIONS:"
+        #print "\n MATCHED ASSOCIATIONS:"
         matched = self.find_a_match(association_lists)
         #matched = self.find_a_match(association_lists)
-        print matched
+	return matched
+
+    def buildBasicJoke(self, topic, matched, desired_output=5):
+
+	#print "Building basic joke."
+	#print "Matched = "
+	#print matched
+
+	if matched == None:
+		return 0
 
 	if len(matched) < 2:
-	    return
+	    print "len(matched) < 2"
+	    return 'empty'
         #word1 = matched[0] + '_' +  self.scholar.get_most_common_tag(matched[0])
         #word2 = matched[1] + '_' + self.scholar.get_most_common_tag(matched[1])
         #print self.scholar.get_cosine_similarity(word1, word2)
@@ -190,68 +252,85 @@ class Comedian:
         #find the embedded location of primitive_joke
         #decode that location to form a grammatically complete sentence (?)
 
-	input1 = matched[0] + ' ' + matched[1]
-        target_vector = self.penseur.get_vector(input1)
-	output1 = self.decode_helper.decode(target_vector)
-        print "\nINPUT1: " + input1
-        print "OUTPUT: " + output1
+	#print "creating output list"
+	output = ['','','','','','','','','','','','','','']
+
+	if desired_output == 1:
+	    input1 = matched[0] + ' ' + matched[1]
+            target_vector = self.penseur.get_vector(input1)
+	    output[1] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT1: " + input1
+            #print "OUTPUT: " + output[1]
 	
-	input2 = matched[1] + ' ' + matched[0]
-        target_vector = self.penseur.get_vector(input2)
-	output2 = self.decode_helper.decode(target_vector)
-        print "\nINPUT2: " + input2
-        print "OUTPUT: " + output2
+	if desired_output == 2:
+	    input2 = matched[1] + ' ' + matched[0]
+            target_vector = self.penseur.get_vector(input2)
+	    output[2] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT2: " + input2
+            #print "OUTPUT: " + output[2]
 	
-	input3 = matched[0] + ' ' + matched[1] + ' ' +  matched[0] + ' ' + matched[1] + ' ' + matched[0] + ' ' + matched[1] + '.'
-        target_vector = self.penseur.get_vector(input3)
-	output3 = self.decode_helper.decode(target_vector)
-        print "\nINPUT3: " + input3
-        print "OUTPUT: " + output3
+	if desired_output == 3:
+	    input3 = matched[0] + ' ' + matched[1] + ' ' +  matched[0] + ' ' + matched[1] + ' ' + matched[0] + ' ' + matched[1] + '.'
+            target_vector = self.penseur.get_vector(input3)
+	    output[3] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT3: " + input3
+            #print "OUTPUT: " + output[3]
 	
-        input4 = topic
-        target_vector = self.penseur.get_vector(input4)
-	output4 = self.decode_helper.decode(target_vector)
-        print "\nINPUT4: " + input4
-        print "OUTPUT: " + output4
+	if desired_output == 4:
+            input4 = topic
+            target_vector = self.penseur.get_vector(input4)
+	    output[4] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT4: " + input4
+            #print "OUTPUT: " + output[4]
         
-        input5 = matched[0] + ' ' + matched[1] + ' ' + topic
-        target_vector = self.penseur.get_vector(input5)
-	output5 = self.decode_helper.decode(target_vector)
-        print "\nINPUT5: " + input5
-        print "OUTPUT: " + output5
+        if desired_output == 5:
+	    input5 = matched[0] + ' ' + matched[1] + ' ' + topic
+            target_vector = self.penseur.get_vector(input5)
+	    output[5] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT5: " + input5
+            #print "OUTPUT: " + output[5]
         
-	input6 = topic + ' ' + matched[0] + ' ' + matched[1]
-        target_vector = self.penseur.get_vector(input6)
-	output6 = self.decode_helper.decode(target_vector)
-        print "\nINPUT6: " + input6
-        print "OUTPUT: " + output6
-
-	if len(association_lists) > 0 and len(association_lists[0]) > 2:
-            input7 = " ".join(association_lists[0]) #first set of associations...
-            target_vector = self.penseur.get_vector(input7)
-	    output7 = self.decode_helper.decode(target_vector)
-            print "\nINPUT7: " + input7
-            print "OUTPUT: " + output7
-
-        if len(handles) > 2:
-
-            #if type(handles[0]) == unicode:
-	    print "HANDLE TYPE"
-	    print type(handles[0])
-            adjusted_topic = topic.replace(handles[0].string, matched[0])
-            adjusted_topic = adjusted_topic.replace(handles[1].string, matched[1])
-	    #else:
-            #    adjusted_topic = topic.replace(handles[0].lower(), matched[0])
-            #    adjusted_topic = adjusted_topic.replace(handles[1].lower(), matched[1])
-            input8 = adjusted_topic
-            target_vector = self.penseur.get_vector(input8)
-	    output8 = self.decode_helper.decode(target_vector)
-            print "\nINPUT8: " + input8
-            print "OUTPUT: " + output8
-
-        print "\n"
+        if desired_output == 6:
+	    input6 = topic + ' ' + matched[0] + ' ' + matched[1]
+            target_vector = self.penseur.get_vector(input6)
+	    output[6] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT6: " + input6
+            #print "OUTPUT: " + output[6]
+        
+	if desired_output == 7:
+	    #use linear algebra to find the phrase we're looking for
+            target_vector = self.penseur.get_vector(topic) + 0.3 * self.penseur.get_vector(matched[0])
+	    output[7] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT6: " + input6
+            #print "OUTPUT: " + output[6]
 	
-	return topic + ': ' + output5
+	if desired_output == 8:
+	    #use linear algebra to find the phrase we're looking for
+            target_vector = self.penseur.get_vector(topic) + 0.3 * self.penseur.get_vector(matched[1])
+	    output[8] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT6: " + input6
+            #print "OUTPUT: " + output[6]
+	
+	if desired_output == 9:
+	    #use linear algebra to find the phrase we're looking for
+            target_vector = 0.1 * self.penseur.get_vector(topic) + self.penseur.get_vector(matched[1])
+	    output[9] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT6: " + input6
+            #print "OUTPUT: " + output[6]
+	
+	if desired_output == 10:
+	    #use linear algebra to find the phrase we're looking for
+            target_vector = 0.1 + self.penseur.get_vector(topic) + self.penseur.get_vector(matched[0]) + self.penseur.get_vector(matched[1])
+	    output[10] = self.decode_helper.decode(target_vector)
+            #print "\nINPUT6: " + input6
+            #print "OUTPUT: " + output[6]
+
+        #print "\n"
+	
+	my_joke = topic + ' ' + output[desired_output]
+	#print "about to return " + my_joke.encode('UTF-8')
+		
+	return my_joke.encode('UTF-8')
 
     def optimizeJoke(self, joke):
         #executes one or more optimisers on
@@ -274,7 +353,12 @@ class Comedian:
            topic = self.getTopic()
            print "\nTopic is '" + topic + "'"
 
-           joke = self.createJoke(topic)
+           #joke = self.createJoke(topic)
+
+           topic = self.getTopic()
+	   matched = self.getAssociationMatch(topic)
+	   joke = self.buildBasicJoke(topic,matched, 9)
+	   joke = self.buildBasicJoke(topic,matched, 10)
 
            print joke
            #(pass the joke to espeak?)
@@ -284,5 +368,125 @@ class Comedian:
            
         "Okay, bye!"
 
+
+    def create_lotsa_jokes(self):
+	jokes = []
+	scores = []
+	for i in range(100):
+	
+	    if i%1 == 0:
+		print "\n\n***********************"
+		print "Iteration " + str(i)
+		print "***********************"
+
+	    try:
+                topic = self.getTopic()
+	        print "\n\nTOPIC: "
+	        sys.stdout.flush()
+	        print topic
+	        sys.stdout.flush()
+	        matched = self.getAssociationMatch(topic)
+	        print "ASSOCIATIONS: "
+	        print matched
+	        sys.stdout.flush()
+
+	        joke = self.buildBasicJoke(topic,matched, 1)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	        joke = self.buildBasicJoke(topic,matched, 2)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	        joke = self.buildBasicJoke(topic,matched, 4)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	        joke = self.buildBasicJoke(topic,matched, 5)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	        joke = self.buildBasicJoke(topic,matched, 6)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+
+	        """joke = self.buildBasicJoke(topic,matched, 7)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	        joke = self.buildBasicJoke(topic,matched, 8)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	    
+                joke = self.buildBasicJoke(topic,matched, 9)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)
+	        joke = self.buildBasicJoke(topic,matched, 10)
+                score = rate_joke(joke, self.penseur)
+	        print '\n' + str(score) + " " + joke
+	        sys.stdout.flush()
+	        jokes.append(joke)
+                scores.append(score)"""
+
+	    except FloatingPointError:
+		print "Empty associations. Proceeding to next topic..."
+	    except:
+		print "Error- 'ascii' codec can't encode characters in topic. Moving on."
+
+	    #print "\nSORTED JOKES:"
+	    #joke_list = [joke for (score,joke) in sorted(zip(scores,jokes))]	
+	    #score_list = [score for (score,joke) in sorted(zip(scores,jokes))]	
+	    #for j in range(len(joke_list)):
+	    #    print str(score_list[j]) + ": " + joke_list[j]
+
+	return jokes, scores
+
+
 c = Comedian()
-c.begin()
+#c.begin()
+jokes, scores = c.create_lotsa_jokes()
+joke_list = [joke for (score,joke) in sorted(zip(scores,jokes))]	
+score_list = [score for (score,joke) in sorted(zip(scores,jokes))]	
+
+print "Writing joke output file..."
+print len(joke_list)
+print len(score_list)
+f1 = open('comedian_REDDIT_LONG2b_100_jokes.txt', 'w')
+for j in range(len(joke_list)):
+    f1.write(str(score_list[j]) + ": " + joke_list[j] + '\n')
+f1.close()
+
+#check how close they are to the dataset
+print "Writing dataset correlation file..."
+sys.stdout.flush()
+f2 = open('comedian_REDDIT_LONG2b_100_jokes_nearest_match.txt', 'w')
+print "File opened..."
+sys.stdout.flush()
+for j in joke_list:
+   #cosine_distance, matching_sentence = nearest_skipthought_match(j, 'data/reddit-comments-filtered-processed-truncated-LONG.txt', c.penseur)
+   print "here1"
+   sys.stdout.flush()
+   cosine_distance, matching_sentence = nearest_skipthought_match(j, 'data/reddit-comments-filtered-processed-truncated.txt', c.penseur)
+   print "here2"
+   sys.stdout.flush()
+   f2.write(str(cosine_distance) + j + ":::" + matching_sentence + '\n')
+f2.close()
